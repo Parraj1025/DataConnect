@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "express": "^4.19.2",
+    "inquirer": "^8.2.4",
+    "pg": "^8.12.0",
+    "sequelize": "^6.37.3"
+  },
+  "name": "dataconnect",
+  "version": "1.0.0",
+  "description": "app for management",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github.com/Parraj1025.git"
+  },
+  "author": "Juan Parra",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/github.com/Parraj1025/issues"
+  },
+  "homepage": "https://github.com/github.com/Parraj1025#readme"
+}
