@@ -24,22 +24,27 @@ async function addRole() {
     
     const questions = [    {
         name: "role",
-        type: "list",
+        type: "input",
         message: "which role will they play?",
-        choices: ['Associate','Supervisor', 'Manager']
        },
        {
         name: "dept",
         type: 'list',
-        message: `under what department? ${Depts}`,
+        message: `under what department?`,
         choices: Depts
-       }]
+       },
+        {
+            name: "salary",
+            type: 'integer',
+            message: "role salary?"
+        }]
   await  inquirer.prompt(questions)
     .then((answer) => {
         newRole = answer.role
         workingDept = {
             role:answer.role,
-            dept: answer.dept
+            dept: answer.dept,
+            sal: answer.salary
         }
 
         console.log(newRole)

@@ -1,5 +1,7 @@
 const addDept = require('./addDept');
 const addRole = require('./addRole');
+const addEmp = require('./addEmployee');
+const update = require('./updateEmployee')
 const inquirer = require('inquirer');
 const pool = require('../config/connection');
 
@@ -14,43 +16,170 @@ const questions = [
     }
 ]
 
-async function dowork(){
+async function dowork() {
 
     const client = await pool.connect()
-try{
-    inquirer.prompt(questions).then(async (answers) => {
-        if (answers.task == 'add department') {
+    try {
+        inquirer.prompt(questions).then(async (answers) => {
+            if (answers.task == 'add department') {
                 let newDept = await addDept()
-    
+
                 const deptQuery = `insert into department(name)
                 values ('${newDept}');`;
-    
+
                 const addedDept = await client.query(deptQuery)
-    
-    
-                console.log(addedDept)
+
+                process.exit(0)
             }
-        if (answers.task == 'add role'){
-            const roleInfo = await addRole()
-            console.log(roleInfo)
-            const idQuery = await client.query(`select id from department d where name = '${roleInfo.dept}';`)
+            if (answers.task == 'add role') {
+                const roleInfo = await addRole()
+                console.log(roleInfo)
+                const idQuery = await client.query(`select id from department d where name = '${roleInfo.dept}';`)
 
-            const matchingId = idQuery.rows[0].id
-            const newDept = roleInfo.dept
+                const matchingId = idQuery.rows[0].id
+                const newRole = roleInfo.role
+                const newSalary = roleInfo.sal
 
-            
 
-            const newRoleQuery = await client.query(`insert into role(name,department_id)
-            values ('${newDept}', ${matchingId});`)
 
-            if(!newRoleQuery){
-                'done'
+                const newRoleQuery = await client.query(`insert into role(name, salary, department_id)
+            values ('${newRole}',${newSalary}, ${matchingId});`)
+
+                if (newRoleQuery) {
+                    console.log('new role added')
+                }
+
+                process.exit(0)
+            }
+            if (answers.task == 'add employee') {
+                const employeeData = await addEmp()
+
+                const newEmployee = {
+                    first_name: await employeeData.firstname,
+                    last_name: await employeeData.lastname,
+                }
+                console.log(employeeData)
+
+
+                const deptQuery = await client.query(`select id from department d where name = '${employeeData.dept}';`)
+                console.log(deptQuery.rows[0].id)
+                const deptId = deptQuery.rows[0].id
+                const roleQuery = await client.query(`select id from role where name = '${employeeData.role}';`)
+                console.log(roleQuery.rows[0].id)
+                const roleId = roleQuery.rows[0].id
+
+                const managerId = await client.query(`select id from role where "name" = 'Manager' and department_id = ${deptId};`)
+                console.log(`managerId = ${managerId.rows[0].id}`)
+                const assignedManager = managerId.rows[0].id
+
+                const manager =
+                    await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
+                console.log(manager.rows)
+
+                if (manager.rows.length == 0) {
+                    const relevantManager = ''
+                    console.log('no current manager')
+
+                    const newEmployeeQuery = await client.query(`insert into employee(first_name,last_name, manager, role_id,department_id)
+                values ('${newEmployee.first_name}','${newEmployee.last_name}', '${relevantManager}', ${roleId}, ${deptId});`)
+
+                    if(newEmployeeQuery){
+                        console.log('employee added')
+                        
+                    }
+                    
+                }
+
+                else {
+
+                    const options = await manager.rows;
+                    const choicess = await options.map((option) => ({
+                        name: `${option.first_name} ${option.last_name}`,
+                        value: `${option.first_name} ${option.last_name}`
+                    }))
+
+                    const managerss = await choicess
+                    console.log(managerss)
+
+                    console.log(await choicess)
+
+                    await inquirer.prompt({
+                        name: 'manager',
+                        type: 'list',
+                        choices: choicess,
+                        message: 'who will be their manager',
+                        
+
+                    })
+                        .then(async (answers) => {
+                            const relevantManager = await answers.manager
+                            console.log(relevantManager)
+                            const newEmployeeQuery = await client.query(`insert into employee(first_name,last_name, manager, role_id,department_id)
+                values ('${newEmployee.first_name}','${newEmployee.last_name}', '${relevantManager}', ${roleId}, ${deptId});`)
+
+                console.table(newEmployeeQuery)
+                        })
+                }
+                process.exit(0)
+            }
+            if (answers.task == 'view all departments') {
+                const allDepts = await client.query('select * from department;')
+                const Depts = await allDepts.rows
+                console.table(Depts)
+                process.exit(0)
+            }
+
+            if (answers.task == 'view all roles') {
+                const allRoles = await client.query('select r.name as role, r.salary as salary, d.name as department from role r inner join department d on r.department_id = d.id ;')
+                const roles = await allRoles.rows
+
+                console.table(roles)
+                process.exit(0)
+            }
+
+            if (answers.task == 'view all employees') {
+                const allEmps = await client.query(`select e.id as Employee_ID, e.first_name as first_name, e.last_name as last_name, r.name as role, d.name as department, e.manager as manager, r.salary as salary from employee e inner join role r on e.role_id = r.id inner join department d on e.department_id = d.id;`)
+                console.table(allEmps.rows)
+                process.exit(0)
             }
             
-        }
-    })
-}
-catch(error){console.log(error)}
+            if (answers.
+                task == 'update employee'){
+                const currentEmployee = await client.query('select * from employee;')
+                const employeeOptions = await currentEmployee.
+                rows.map((employee) =>({
+                    name: `${employee.first_name} ${employee.last_name}`,
+                    value: {
+                        first_name: employee.first_name,
+                        last_name: employee.last_name
+                    }
+                }))
+                console.table(employeeOptions)
+
+                let chosenEmployee = ''
+
+                await inquirer.prompt({
+                    name: 'chosenemp',
+                    type: 'list',
+                    choices: employeeOptions,
+                    message: 'who do you want to update'
+                }).then(async(answer) => {
+                    console.log(answer.chosenemp)
+                    chosenEmployee = answer.chosenemp
+                    const newData = await update(chosenEmployee)
+                })
+                console.log(chosenEmployee)
+
+                process.exit(0)
+
+            }
+        })
+    }
+    catch (error) { console.log(error);} finally{
+    
+        
+    }
+    
 }
 
 module.exports = dowork

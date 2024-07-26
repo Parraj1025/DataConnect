@@ -4,6 +4,8 @@ const dowork = require('./controllers/main');
 
 
 async function init() {
+
+    console.log('welcome, make sure you add department to add roles and then employee')
     try {
 
         const client = await pool.connect()
@@ -17,6 +19,7 @@ async function init() {
         create table IF NOT EXISTS role(
             id SERIAL PRIMARY KEY,
             name VARCHAR(30) not null,
+            salary integer not null,
             department_id integer,
             foreign key (department_id) references department(id)
         );
@@ -24,8 +27,8 @@ async function init() {
         CREATE TABLE IF NOT EXISTS employee (
           id SERIAL PRIMARY KEY,
           first_name VARCHAR(30) NOT NULL,
-          last_name VARCHAR(30) NOT NULL,
-          salary integer not null, 
+          last_name VARCHAR(30) NOT NULL, 
+          manager VARCHAR(30),
           role_id INTEGER,
           FOREIGN KEY (role_id) REFERENCES role(id),
           department_id INTEGER,
