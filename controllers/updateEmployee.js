@@ -1,6 +1,7 @@
 const inquirer = require('inquirer')
 const pool = require('../config/connection')
 const addEmp= require('./addEmployee')
+const { AssertionError } = require('assert')
 
 
 
@@ -17,32 +18,34 @@ async function update(employee) {
 
     const deptQuery = await client.query(`select id from department d where name = '${newData.dept}';`)
     console.log(deptQuery.rows[0].id)
-    const deptId = deptQuery.rows[0].id
+    const deptId = await deptQuery.rows[0].id
     const roleQuery = await client.query(`select id from role where name = '${newData.role}';`)
     console.log(roleQuery.rows[0].id)
-    const roleId = roleQuery.rows[0].id
+    const roleId = await roleQuery.rows[0].id
 
     const managerId = await client.query(`select id from role where "name" = 'Manager' and department_id = ${deptId};`)
-    console.log(`managerId = ${managerId.rows[0].id}`)
-    let assignedManager = managerId.rows[0].id
-    if(!assignedManager){
-        assignedManager = 'no manager assigned'
-    }
+    
+    if(managerId){
+        assignedManager = managerId.rows[0].id
 
-    const manager =
-        await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
+    }
+    else{
+        assignedManager = null
+    }
+    
+    const manager = await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
     console.log(manager.rows)
 
-    if (manager.rows.length == 0) {
+    
+
+    if (!manager) {
         const relevantManager = ''
         console.log('no current manager')
 
-        const updateQuery = await client.query(`UPDATE employee 
-        SET first_name  = '${updatedEmployee.first_name}', last_name  = '${updatedEmployee.last_name}', manager = '${relevantManager}', role_id = ${roleId}, department_id = ${deptId}
-        WHERE  id = 1;`)
+        const updateQuery = await client.query(`UPDATE employee SET first_name  = '${updatedEmployee.first_name}', last_name  = '${updatedEmployee.last_name}', manager = '${relevantManager}', role_id = ${roleId}, department_id = ${deptId} WHERE  first_name = ${employee.first_name};`)
 
       console.log(updateQuery)
-    
+
 }}
 
 module.exports = update
