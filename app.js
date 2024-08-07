@@ -1,7 +1,11 @@
+//determine modules and functions being used
+
 const inquirer = require('inquirer');
 const pool = require('./config/connection');
 const dowork = require('./controllers/main');
 
+
+//creates function to test and establish data tables
 
 async function init() {
 
@@ -50,7 +54,5 @@ async function init() {
         console.log(error)
     }
 }
-// const client = await pool.connect()
-
-// const storedData = await client.query(Query)
+//initiates server on start up
 init()

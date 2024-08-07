@@ -7,7 +7,7 @@ const pool = require('../config/connection');
 const { init } = require('../../Social/models');
 
 
-
+//this does all the work using functions from other files to gather information needed for each function of the app
 
 const questions = [
     {
