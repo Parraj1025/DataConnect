@@ -69,15 +69,20 @@ async function dowork() {
                 const roleId = roleQuery.rows[0].id
 
                 const managerId = await client.query(`select id from role where "name" = 'Manager' and department_id = ${deptId};`)
-                console.log(`managerId = ${managerId.rows[0].id}`)
-                const assignedManager = managerId.rows[0].id
+                let assignedManager =''
+               if (!managerId.rows.id){
+                 assignedManager = null
+               }
+               else{
+                 assignedManager = managerId.rows[0].id
+               }
 
                 const manager =
                     await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
                 console.log(manager.rows)
 
                 if (manager.rows.length == 0) {
-                    const relevantManager = ''
+                    const relevantManager = null
                     console.log('no current manager')
 
                     const newEmployeeQuery = await client.query(`insert into employee(first_name,last_name, manager, role_id,department_id)
@@ -96,7 +101,8 @@ async function dowork() {
                     const choicess = await options.map((option) => ({
                         name: `${option.first_name} ${option.last_name}`,
                         value: `${option.first_name} ${option.last_name}`
-                    }))
+                    })
+                    )
 
                     const managerss = await choicess
                     console.log(managerss)
@@ -140,7 +146,7 @@ async function dowork() {
             if (answers.task == 'view all employees') {
                 const allEmps = await client.query(`select e.id as Employee_ID, e.first_name as first_name, e.last_name as last_name, r.name as role, d.name as department, e.manager as manager, r.salary as salary from employee e inner join role r on e.role_id = r.id inner join department d on e.department_id = d.id;`)
                 console.table(allEmps.rows)
-                process.exit(0)
+                
             }
             
             if (answers.
@@ -158,6 +164,7 @@ async function dowork() {
 
                 let chosenEmployee = ''
 
+                
                 await inquirer.prompt({
                     name: 'chosenemp',
                     type: 'list',
@@ -170,7 +177,7 @@ async function dowork() {
                 })
                 console.log(chosenEmployee)
 
-                process.exit(0)
+               
 
             }
         })

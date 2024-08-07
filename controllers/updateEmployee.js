@@ -24,7 +24,10 @@ async function update(employee) {
 
     const managerId = await client.query(`select id from role where "name" = 'Manager' and department_id = ${deptId};`)
     console.log(`managerId = ${managerId.rows[0].id}`)
-    const assignedManager = managerId.rows[0].id
+    let assignedManager = managerId.rows[0].id
+    if(!assignedManager){
+        assignedManager = 'no manager assigned'
+    }
 
     const manager =
         await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
