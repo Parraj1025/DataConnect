@@ -53,6 +53,4 @@ async function init() {
 // const client = await pool.connect()
 
 // const storedData = await client.query(Query)
-
-
 init()

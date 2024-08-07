@@ -4,6 +4,8 @@ const addEmp = require('./addEmployee');
 const update = require('./updateEmployee')
 const inquirer = require('inquirer');
 const pool = require('../config/connection');
+const { init } = require('../../Social/models');
+
 
 
 
@@ -11,14 +13,15 @@ const questions = [
     {
         name: "task",
         type: 'list',
-        choices: ['add department', 'add role', 'add employee', 'view all departments', 'view all roles', 'view all employees', 'update employee'],
+        choices: ['add department', 'add role', 'add employee', 'view all departments', 'view all roles', 'view all employees', 'update employee',"exit"],
         message: 'what do you want to do?',
     }
 ]
 
 async function dowork() {
-
+    let loop = true
     const client = await pool.connect()
+    if (loop == true){
     try {
         inquirer.prompt(questions).then(async (answers) => {
             if (answers.task == 'add department') {
@@ -28,8 +31,6 @@ async function dowork() {
                 values ('${newDept}');`;
 
                 const addedDept = await client.query(deptQuery)
-
-                process.exit(0)
             }
             if (answers.task == 'add role') {
                 const roleInfo = await addRole()
@@ -48,8 +49,6 @@ async function dowork() {
                 if (newRoleQuery) {
                     console.log('new role added')
                 }
-
-                process.exit(0)
             }
             if (answers.task == 'add employee') {
                 const employeeData = await addEmp()
@@ -126,13 +125,11 @@ async function dowork() {
                 console.table(newEmployeeQuery)
                         })
                 }
-                process.exit(0)
             }
             if (answers.task == 'view all departments') {
                 const allDepts = await client.query('select * from department;')
                 const Depts = await allDepts.rows
                 console.table(Depts)
-                process.exit(0)
             }
 
             if (answers.task == 'view all roles') {
@@ -176,18 +173,20 @@ async function dowork() {
                     const newData = await update(chosenEmployee)
                 })
                 console.log(chosenEmployee)
-
-               
-
             }
-        })
-    }
-    catch (error) { console.log(error);} finally{
-    
-        
-    }
-    
+            if (answers.task == 'exit'){
+               process.exit(0)
+            }
+            let loop = true
+            dowork()
+    })
 }
+    catch (error) { console.log(error);} finally{
+    }}
+
+   
+}
+
 
 module.exports = dowork
 
