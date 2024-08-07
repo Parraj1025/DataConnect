@@ -161,10 +161,9 @@ async function dowork() {
                     const currentEmployee = await client.query('select * from employee;')
                     const employeeOptions = await currentEmployee.
                         rows.map((employee) => ({
-                            name: `${employee.first_name} ${employee.last_name}`,
+                            name: ` ${employee.id} ${employee.first_name} ${employee.last_name}`,
                             value: {
-                                first_name: employee.first_name,
-                                last_name: employee.last_name
+                                id: employee.id
                             }
                         }))
                     console.table(employeeOptions)

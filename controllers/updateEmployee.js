@@ -12,6 +12,7 @@ async function update(employee) {
     const updatedEmployee = {
         first_name: await newData.firstname,
         last_name: await newData.lastname,
+        id: employee.id
     }
     console.log(updatedEmployee)
 
@@ -25,12 +26,13 @@ async function update(employee) {
 
     const managerId = await client.query(`select id from role where "name" = 'Manager' and department_id = ${deptId};`)
     
-    if(managerId){
-        assignedManager = managerId.rows[0].id
+    if(managerId.rows.length === 0 ){
+        assignedManager = null
+       
 
     }
     else{
-        assignedManager = null
+        assignedManager = managerId.rows[0].id
     }
     
     const manager = await client.query(`select first_name, last_name from employee where role_id = ${assignedManager} and department_id = ${deptId};`)
@@ -42,10 +44,16 @@ async function update(employee) {
         const relevantManager = ''
         console.log('no current manager')
 
-        const updateQuery = await client.query(`UPDATE employee SET first_name  = '${updatedEmployee.first_name}', last_name  = '${updatedEmployee.last_name}', manager = '${relevantManager}', role_id = ${roleId}, department_id = ${deptId} WHERE  first_name = ${employee.first_name};`)
+        const updateQuery = await client.query(`UPDATE employee SET first_name  = '${updatedEmployee.first_name}', last_name  = '${updatedEmployee.last_name}', manager = '${relevantManager}', role_id = ${roleId}, department_id = ${deptId} WHERE  id = ${employee.id};`)
 
       console.log(updateQuery)
 
-}}
+}
+    else{
+        const relevantManager = ''
+        const updateQuery = await client.query(`UPDATE employee SET first_name  = '${updatedEmployee.first_name}', last_name  = '${updatedEmployee.last_name}', manager = '${relevantManager}', role_id = ${roleId}, department_id = ${deptId} WHERE  id = ${employee.id};`)
+        console.log(updateQuery)
+    }
+}
 
 module.exports = update
